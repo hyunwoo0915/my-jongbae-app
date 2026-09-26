@@ -43,28 +43,60 @@ def calculate_score(row):
     score = 0
     reasons = []
     
-    # 1. 거래대금 계산 (1000억 이상)
-    price = float(row.get('stck_prpr', 0))
+    # 증권사에서 받아온 데이터(문자)를 계산하기 위해 숫자(float)로 변환
+    price = float(row.get('stck_prpr', 0))       # 현재가
+    open_p = float(row.get('stck_oprc', 0))      # 시가
+    high = float(row.get('stck_hgpr', 0))        # 당일 최고가
+    low = float(row.get('stck_lwpr', 1))         # 당일 최저가
+    rate = float(row.get('prdy_ctrt', 0))        # 등락률(%)
+    
+    # 거래대금: 누적거래량 * 현재가 / 1억 (간이 계산)
     vol = float(row.get('acml_vol', 0))
     trade_val = (price * vol) / 100000000
     
-    if trade_val >= 2000:
-        score += 30
-        reasons.append("거래대금 2000억 이상")
-    elif trade_val >= 1000:
+    # 1. 기본 거래대금 (20점)
+    if trade_val >= 1000:
         score += 20
-        reasons.append("거래대금 1000억 이상")
-        
-    # 2. 등락률 계산 (7% ~ 22% 권역)
-    rate = float(row.get('prdy_ctrt', 0))
-    if 7.0 <= rate <= 22.0:
-        score += 30
-        reasons.append(f"적정 상승률({rate}%)")
-        
-    # 3. 윗꼬리 체크 (고가 대비 종가 관리)
-    high = float(row.get('stck_hgpr', 1))
-    close = float(row.get('stck_prpr', 1))
-    open_p = float(row.get('stck_oprc', 1))
+        reasons.append("1.거래대금 1천억통과")
+
+    # 2. 당일 상승률 (15점)
+    if 5.0 <= rate <= 20.0:
+        score += 15
+        reasons.append(f"2.상승률적절({rate}%)")
+
+    # 3. 양봉 유지 (10점)
+    if price > open_p:
+        score += 10
+        reasons.append("3.양봉유지")
+
+    # 4. 윗꼬리 길이 (15점)
+    if high > open_p:
+        # (고가-현재가) / (고가-시가) 비중 계산
+        tail_ratio = ((high - price) / (high - open_p)) * 100
+        if tail_ratio < 20:
+            score += 15
+            reasons.append("4.윗꼬리짧음")
+
+    # 5. 막판 고가 방어력 (15점)
+    # 현재가가 당일 최고가에서 3% 이상 빠지지 않았는지 확인
+    if price >= (high * 0.97):
+        score += 15
+        reasons.append("5.최고가부근마감")
+
+    # 6. 장중 변동성 (10점)
+    # 하루 종일 10% 이상 위아래로 움직였는지 확인
+    volatility = ((high - low) / low) * 100
+    if volatility >= 10:
+        score += 10
+        reasons.append("6.활발한움직임")
+
+    # 7. 대규모 자금 보너스 (15점)
+    if trade_val >= 2000:
+        score += 15
+        reasons.append("7.대규모자금(2천억↑)")
+
+    return score, ", ".join(reasons)
+
     
     if high > open_p:
         tail_ratio = ((high - close) / (high - open_p)) * 100
