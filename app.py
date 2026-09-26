@@ -9,8 +9,8 @@ st.title("🎯 오늘 오후 종가베팅 추천 종목")
 st.caption("오후 3시~3시 20분 진입 전용 스코어링 대시보드")
 
 # 보안을 위해 설정값에서 API 키 불러오기
-APP_KEY = st.secrets.get("PSfphBgQS16mRManwLEL8dSfKHvN78i2quCa", "")
-APP_SECRET = st.secrets.get("3O0zlnTf8PNpoZUOcjsESN3L+p8GbFSrIEKSnCEzkd+rJpqf7cYHEXARcZmD8BCKrLDA3ZwL0ggr8+4BC8IFsaw0r0OpROSewXaVX6ujOHhbZS+qlEskBgbymBBfdlXuzuQsY2tr+Pdkgzf5wY8620L/9fVtEDrSKX1UWoEqmgDYiqe4ce0=", "")
+APP_KEY = st.secrets.get("KIS_APPKEY", "")
+APP_SECRET = st.secrets.get("KIS_APPSECRET", "")
 URL_BASE = "https://openapi.koreainvestment.com:9443"
 
 @st.cache_data(ttl=3600)
@@ -97,14 +97,6 @@ def calculate_score(row):
 
     return score, ", ".join(reasons)
 
-    
-    if high > open_p:
-        tail_ratio = ((high - close) / (high - open_p)) * 100
-        if tail_ratio < 20:
-            score += 40
-            reasons.append("종가 고가 관리 잘됨")
-            
-    return score, ", ".join(reasons)
 
 # 메인 실행 화면
 if st.button("🔥 실시간 종가베팅 후보 분석 실행"):
