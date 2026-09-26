@@ -21,7 +21,6 @@ def get_access_token():
     return res.json().get("access_token")
 
 def fetch_top_trading_volume(token):
-    def fetch_top_trading_volume(token):
     path = "/uapi/domestic-stock/v1/ranking/trade-value"
     headers = {
         "content-type": "application/json",
@@ -38,13 +37,11 @@ def fetch_top_trading_volume(token):
         "FID_INPUT_PRICE_2": "", "FID_VOL_CONT": ""
     }
     
-    # 🌟 안전장치 추가 부분 🌟
     res = requests.get(f"{URL_BASE}/{path}", headers=headers, params=params)
     
     try:
-        data = res.json() # 증권사가 준 데이터를 해석해봄
+        data = res.json()
         
-        # 만약 증권사에서 에러 메시지를 보냈다면 화면에 띄움
         if 'msg1' in data:
             st.error(f"증권사 메시지: {data['msg1']}")
             return pd.DataFrame()
@@ -52,9 +49,8 @@ def fetch_top_trading_volume(token):
         return pd.DataFrame(data.get('output', []))
         
     except:
-        # JSON 해석에 실패했을 때 (점검 시간 등)
         st.error("⚠️ 증권사 서버에서 정상적인 데이터를 주지 않습니다. (주말/새벽 서버 점검 시간일 확률이 높습니다.)")
-        st.info(f"참고용 서버 응답: {res.text[:100]}...") # 원인이 뭔지 살짝 보여줌
+        st.info(f"참고용 서버 응답: {res.text[:100]}...")
         return pd.DataFrame()
 
 
