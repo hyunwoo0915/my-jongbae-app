@@ -121,17 +121,25 @@ if st.button("🔥 실시간 종가베팅 후보 분석 실행"):
         token = get_access_token()
         df = fetch_top_trading_volume(token)
         
-        results = []
-        for idx, row in df.iterrows():
-            score, reason = calculate_score(row)
-            if score >= 50:  # 50점 이상 종목만
-                results.append({
-                    "종목명": row.get('hts_kor_isnm'),
-                    "현재가": f"{int(row.get('stck_prpr', 0)):,}원",
-                    "등락률": f"{float(row.get('prdy_ctrt', 0))}%",
-                    "종베점수": score,
-                    "포착이유": reason
-                })
-        
-        res_df = pd.DataFrame(results).sort_values(by="종베점수", ascending=False)
-        st.dataframe(res_df, use_container_width=True)
+        # 증권사에서 빈 데이터를 줬다면 여기서 멈춤
+        if df.empty:
+            st.warning("증권사에서 데이터를 받아오지 못했습니다. 잠시 후 다시 시도해주세요.")
+        else:
+            results = []
+            for idx, row in df.iterrows():
+                score, reason = calculate_score(row)
+                if score >= 50:  # 50점 이상 종목만 합격
+                    results.append({
+                        "종목명": row.get('hts_kor_isnm'),
+                        "현재가": f"{int(float(row.get('stck_prpr', 0))):,}원",
+                        "등락률": f"{float(row.get('prdy_ctrt', 0))}%",
+                        "종베점수": score,
+                        "포착이유": reason
+                    })
+            
+            # 🌟 안전장치: 합격한 종목이 1개라도 있을 때만 줄을 세움 🌟
+            if len(results) > 0:
+                res_df = pd.DataFrame(results).sort_values(by="종베점수", ascending=False)
+                st.dataframe(res_df, use_container_width=True)
+            else:
+                st.info("현재 50점 이상을 받은 종가베팅 후보 종목이 없습니다.")
