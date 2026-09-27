@@ -19,8 +19,8 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: 인터넷 통신 부품(requests) 조립하기
-      run: pip install requests
+     - name: 필요한 부품 설치하기
+      run: pip install requests pandas beautifulsoup4
 
     - name: 업무 지시서 실행하기 (비밀 금고 열쇠도 같이 줌)
       env:
